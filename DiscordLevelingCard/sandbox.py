@@ -183,7 +183,8 @@ class Sandbox:
         myFont = ImageFont.truetype(path + "/assets/levelfont.otf",30)
         draw.text((197,(327/2)+125), f"LEVEL - {Sandbox._convert_number(self.level)}",font=myFont, fill=self.text_color,stroke_width=1,stroke_fill=(0, 0, 0))
 
-        w,_ = draw.textsize(f"{current_exp}/{max_exp}", font=myFont)
+        bbox = draw.textbbox((0, 0), f"{current_exp}/{max_exp}", font=myFont)
+        w = bbox[2] - bbox[0]
         draw.text((638-w-50,(327/2)+125), f"{current_exp}/{max_exp}",font=myFont, fill=self.text_color,stroke_width=1,stroke_fill=(0, 0, 0))
 
         mask_im = Image.open(path + "/assets/mask_circle.jpg").convert('L').resize((170,170))
