@@ -5,7 +5,6 @@ from .error import InvalidImageType, InvalidImageUrl
 from requests import get
 from PIL import Image
 
-
 class Settings:
     """
     Represents the settings for the rank card
@@ -46,15 +45,23 @@ class Settings:
         self.text_color = text_color
         self.background_color = background_color
 
-        if isinstance(self.background, IOBase):
-            if not (self.background.seekable() and self.background.readable() and self.background.mode == "rb"):
-                raise InvalidImageType(f"File buffer {self.background!r} must be seekable and readable and in binary mode")
+        if self.background is None:
+            pass  # Allow None as a valid value
+        elif isinstance(self.background, IOBase):
+            # In Python 3.12, file objects no longer have a 'mode' attribute.
+            # Instead, check if it's a BufferedIOBase and readable/seekable.
+            if not (self.background.seekable() and self.background.readable()):
+                raise InvalidImageType(f"File buffer {self.background!r} must be seekable and readable")
             self.background = Image.open(self.background)
         elif isinstance(self.background, str):
             if self.background.startswith("http"):
                 self.background = Settings._image(self.background)
             else:
-                self.background = Image.open(open(self.background, "rb"))
+                with open(self.background, "rb") as f:
+                    self.background = Image.open(f)
+        elif isinstance(self.background, PathLike):
+            with open(self.background, "rb") as f:
+                self.background = Image.open(f)
         else:
             raise InvalidImageType(f"background must be a path or url or a file buffer, not {type(self.background)}") 
 
